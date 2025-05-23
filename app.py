@@ -9,107 +9,122 @@ import warnings
 
 warnings.filterwarnings("ignore")
 
-st.set_page_config(page_title="Phone Addiction Dashboard", layout="wide")
+# --- Page config ---
+st.set_page_config(page_title="Phone Addiction App", layout="wide")
 
-# Set custom font and color
+# --- Styling ---
 st.markdown("""
-    <style>
-        html, body, [class*="css"]  {
-            font-family: 'Segoe UI', sans-serif;
-        }
-        .main {background-color: #ffffff;}
-        h1, h2, h3 {color: #6a0dad;}
-        .stButton>button {
-            color: white;
-            background-color: #6a0dad;
-            border-radius: 8px;
-            padding: 10px 20px;
-            font-size: 16px;
-            font-weight: bold;
-        }
-    </style>
+<style>
+    html, body, [class*="css"] {
+        font-family: 'Segoe UI', sans-serif;
+    }
+    h1, h2, h3 {
+        color: #6a0dad;
+    }
+    .main-button {
+        display: flex;
+        flex-direction: column;
+        gap: 1rem;
+        max-width: 400px;
+    }
+    .main-button button {
+        background-color: #6a0dad !important;
+        color: white !important;
+        font-size: 18px !important;
+        padding: 1rem !important;
+        border-radius: 10px !important;
+        font-weight: bold;
+    }
+</style>
 """, unsafe_allow_html=True)
 
-# Load dataset
-file_path = "phone_behavior_data.csv"
-if os.path.exists(file_path):
-    df = pd.read_csv(file_path)
+# --- Load dataset ---
+try:
+    df = pd.read_csv("phone_behavior_data.csv")
     df['Screen On Time (min/day)'] = df['Screen On Time (hours/day)'] * 60
     df['Engagement Ratio'] = df['App Usage Time (min/day)'] / df['Screen On Time (min/day)']
-else:
-    st.error("Dataset not found. Please ensure the CSV is present.")
+except Exception as e:
+    st.error("Dataset not found. Please make sure 'phone_behavior_data.csv' is in the repo.")
 
-# Sidebar navigation
-st.sidebar.title("Explore the Story")
-page = st.sidebar.radio("Go to:", (
-    "Main Page", 
-    "1. Our Data", 
-    "2. Demographics Don't Matter", 
-    "3. The Story Begins with Variables", 
-    "4. The Heavy Users", 
-    "5. Your Number of Apps Define You"
-))
+# --- Main navigation logic ---
+if 'page' not in st.session_state:
+    st.session_state.page = 'home'
 
-# --- Main Page ---
-if page == "Main Page":
+# --- Homepage with buttons ---
+if st.session_state.page == 'home':
     st.title("📱 Behavioral Indicators of Phone Addiction")
-    st.markdown("Navigate the sections using the menu on the left to explore the behavioral markers of excessive phone usage.")
+    st.subheader("Explore the sections below:")
+    st.markdown("<div class='main-button'>", unsafe_allow_html=True)
+    if st.button("1. Our Data"):
+        st.session_state.page = 'section1'
+    if st.button("2. Demographics Don't Matter"):
+        st.session_state.page = 'section2'
+    if st.button("3. The Story Begins with Variables"):
+        st.session_state.page = 'section3'
+    if st.button("4. The Heavy Users"):
+        st.session_state.page = 'section4'
+    if st.button("5. Your Number of Apps Define You"):
+        st.session_state.page = 'section5'
+    st.markdown("</div>", unsafe_allow_html=True)
 
 # --- Section 1 ---
-elif page == "1. Our Data":
+elif st.session_state.page == 'section1':
     st.header("1. Our Data")
     st.image("images/opening_gif.gif")
     st.markdown("""
-    This  dataset captures a rich set of real-world behavioral signals from mobile phone users, including app usage time, screen-on time, data consumption, and the number of apps installed. These variables provide a practical foundation for exploring digital engagement patterns and identifying potential signs of overuse or phone addiction.
+    This dataset captures a rich set of real-world behavioral signals from mobile phone users, including app usage time, screen-on time, data consumption, and the number of apps installed. These variables provide a practical foundation for exploring digital engagement patterns and identifying potential signs of overuse or phone addiction.
     """)
+    st.button("Back", on_click=lambda: st.session_state.update(page='home'))
 
 # --- Section 2 ---
-elif page == "2. Demographics Don't Matter":
+elif st.session_state.page == 'section2':
     st.header("2. Demographics Don't Matter")
     st.image("images/bimodal_distribution.png")
     st.markdown("Chi-square tests show no meaningful link between gender, OS, device model, or age band and high usage.")
     st.image("images/demographics_boxplots.png")
+    st.button("Back", on_click=lambda: st.session_state.update(page='home'))
 
 # --- Section 3 ---
-elif page == "3. The Story Begins with Variables":
+elif st.session_state.page == 'section3':
     st.header("3. The Story Begins with Variables")
     st.image("images/final_summary_banner.png")
     st.markdown("""
-    App Usage Time shows a clear bimodal distribution, with peaks around 100 and 500 minutes per day. 
+    App Usage Time shows a clear bimodal distribution, with peaks around 100 and 500 minutes per day.  
     Screen-On Time stretches up to 12 hours for some users.
     """)
+    st.button("Back", on_click=lambda: st.session_state.update(page='home'))
 
 # --- Section 4 ---
-elif page == "4. The Heavy Users":
+elif st.session_state.page == 'section4':
     st.header("4. The Heavy Users")
     st.image("images/final_summary_banner.png")
-    st.markdown("T-tests confirm that Class 5 tops every behavioural metric (app usage, screen time, data usage, apps installed) with p < 0.001")
-    st.markdown("Class 5 averages ~0.9, meaning most screen time is in apps, while lower classes are more scattered. Class 4 also shows a high use of apps in screen on time")
+    st.markdown("T-tests confirm that Class 5 tops every behavioural metric (app usage, screen time, data usage, apps installed) with p < 0.001.")
+    st.markdown("Class 5 averages ~0.9, meaning most screen time is in apps, while lower classes are more scattered. Class 4 also shows a high use of apps in screen on time.")
     st.markdown("""
-    Findings from T-Test: Behavioral Differences in Class 5 Users.  
-    
-    To understand what distinguishes heavy users (Class 5) from the rest of the population, I conducted independent t-tests on key behavioral metrics. The results show statistically significant differences across all variables except age.
+    **Findings from T-Test: Behavioral Differences in Class 5 Users**
 
     - App Usage Time: Class 5 users spend over twice as much time on apps compared to others.
-    - Screen On Time: Their screens are active for more than 10 hours per day, suggesting high engagement or phone dependence.
-    - Battery Drain: Significantly higher battery usage reflects constant device activity across functions.
-    - Data Usage: Nearly triple the data consumption indicates more online activity (streaming, browsing, social media).
-    - Number of Apps Installed: Class 5 users have over twice the number of apps, pointing to broader and more frequent app exploration.
+    - Screen On Time: Their screens are active for more than 10 hours per day.
+    - Battery Drain: Significantly higher battery usage.
+    - Data Usage: Nearly triple the data consumption.
+    - Number of Apps Installed: Over twice as many apps.
     """)
     st.image("images/class_behavior_chart.png")
     st.image("images/engagement_ratio.png")
+    st.button("Back", on_click=lambda: st.session_state.update(page='home'))
 
 # --- Section 5 ---
-elif page == "5. Your Number of Apps Define You":
+elif st.session_state.page == 'section5':
     st.header("5. Your Number of Apps Define You")
     st.markdown("""
-    The model revealed a strong and significant relationship: 
+    The model revealed a strong and significant relationship:
 
-    - Each additional app increases screen-on time by approximately 6.5 minutes/day
-    - The regression line fits the data closely with R² = 0.897
-    - The result is also visually confirmed by the strong linear trend and tight confidence interval around the red regression line
+    - Each additional app increases screen-on time by approximately 6.5 minutes/day.
+    - The regression line fits the data closely with R² = 0.897.
+    - The result is visually confirmed by the tight confidence interval.
 
-    These findings suggest that the number of apps installed is not just a passive metric — it actively contributes to increased phone engagement. This supports our hypothesis that app diversity drives screen dependence, a key indicator of potential overuse.
+    These findings suggest that the number of apps installed is not just a passive metric — it actively contributes to increased phone engagement.
     """)
     st.image("images/regression_apps_vs_screen.png")
     st.image("images/engagement_ratio.png")
+    st.button("Back", on_click=lambda: st.session_state.update(page='home'))
