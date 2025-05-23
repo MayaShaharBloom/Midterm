@@ -4,120 +4,112 @@ import numpy as np
 import seaborn as sns
 import matplotlib.pyplot as plt
 import statsmodels.api as sm
-from scipy.stats import ttest_ind, chi2_contingency
 import os
-import wget
 import warnings
 
 warnings.filterwarnings("ignore")
-st.set_page_config(page_title="Phone Addiction Analysis", layout="wide")
 
-# --- Header ---
-st.title("📱 Behavioral Indicators of Phone Addiction")
+st.set_page_config(page_title="Phone Addiction Dashboard", layout="wide")
+
+# Set custom font and color
 st.markdown("""
-This interactive app analyzes mobile user behavior to uncover patterns of possible phone addiction.
-Explore how app usage, screen time, and demographics relate to behavioral intensity.
-""")
+    <style>
+        html, body, [class*="css"]  {
+            font-family: 'Segoe UI', sans-serif;
+        }
+        .main {background-color: #ffffff;}
+        h1, h2, h3 {color: #6a0dad;}
+        .stButton>button {
+            color: white;
+            background-color: #6a0dad;
+            border-radius: 8px;
+            padding: 10px 20px;
+            font-size: 16px;
+            font-weight: bold;
+        }
+    </style>
+""", unsafe_allow_html=True)
 
-# --- Data Load ---
-st.header("1. Load and Preview Dataset")
-file_id = '1plAz7EEeNs8j6WEYaBdLywyX9A9qMprS'
-url = f'https://drive.google.com/uc?export=download&id={file_id}'
-filename = "phone_behavior_data.csv"
+# Load dataset
+file_path = "phone_behavior_data.csv"
+if os.path.exists(file_path):
+    df = pd.read_csv(file_path)
+    df['Screen On Time (min/day)'] = df['Screen On Time (hours/day)'] * 60
+    df['Engagement Ratio'] = df['App Usage Time (min/day)'] / df['Screen On Time (min/day)']
+else:
+    st.error("Dataset not found. Please ensure the CSV is present.")
 
-if not os.path.exists(filename):
-    st.write("Downloading dataset...")
-    wget.download(url, filename)
+# Sidebar navigation
+st.sidebar.title("Explore the Story")
+page = st.sidebar.radio("Go to:", (
+    "Main Page", 
+    "1. Our Data", 
+    "2. Demographics Don't Matter", 
+    "3. The Story Begins with Variables", 
+    "4. The Heavy Users", 
+    "5. Your Number of Apps Define You"
+))
 
-df = pd.read_csv(filename)
-st.success("Dataset loaded successfully!")
-st.dataframe(df.head())
+# --- Main Page ---
+if page == "Main Page":
+    st.title("📱 Behavioral Indicators of Phone Addiction")
+    st.markdown("Navigate the sections using the menu on the left to explore the behavioral markers of excessive phone usage.")
 
-# --- Insight 1 ---
-st.header("2. Distinct Behavioral Clusters")
-col1, col2 = st.columns(2)
+# --- Section 1 ---
+elif page == "1. Our Data":
+    st.header("1. Our Data")
+    st.image("images/opening_gif.gif")
+    st.markdown("""
+    This  dataset captures a rich set of real-world behavioral signals from mobile phone users, including app usage time, screen-on time, data consumption, and the number of apps installed. These variables provide a practical foundation for exploring digital engagement patterns and identifying potential signs of overuse or phone addiction.
+    """)
 
-with col1:
-    fig1, ax1 = plt.subplots()
-    sns.histplot(data=df, x='App Usage Time (min/day)', binwidth=15, kde=True, ax=ax1)
-    ax1.set_title("App Usage Time Distribution")
-    st.pyplot(fig1)
+# --- Section 2 ---
+elif page == "2. Demographics Don't Matter":
+    st.header("2. Demographics Don't Matter")
+    st.image("images/bimodal_distribution.png")
+    st.markdown("Chi-square tests show no meaningful link between gender, OS, device model, or age band and high usage.")
+    st.image("images/demographics_boxplots.png")
 
-with col2:
-    fig2, ax2 = plt.subplots()
-    sns.histplot(data=df, x='Screen On Time (hours/day)', binwidth=0.5, kde=True, ax=ax2)
-    ax2.set_title("Screen On Time Distribution")
-    st.pyplot(fig2)
+# --- Section 3 ---
+elif page == "3. The Story Begins with Variables":
+    st.header("3. The Story Begins with Variables")
+    st.image("images/final_summary_banner.png")
+    st.markdown("""
+    App Usage Time shows a clear bimodal distribution, with peaks around 100 and 500 minutes per day. 
+    Screen-On Time stretches up to 12 hours for some users.
+    """)
 
-st.markdown("""
-- App Usage is bimodal: light vs. heavy users.
-- Some users screen-on up to **12 hours** daily.
-""")
+# --- Section 4 ---
+elif page == "4. The Heavy Users":
+    st.header("4. The Heavy Users")
+    st.image("images/final_summary_banner.png")
+    st.markdown("T-tests confirm that Class 5 tops every behavioural metric (app usage, screen time, data usage, apps installed) with p < 0.001")
+    st.markdown("Class 5 averages ~0.9, meaning most screen time is in apps, while lower classes are more scattered. Class 4 also shows a high use of apps in screen on time")
+    st.markdown("""
+    Findings from T-Test: Behavioral Differences in Class 5 Users.  
+    
+    To understand what distinguishes heavy users (Class 5) from the rest of the population, I conducted independent t-tests on key behavioral metrics. The results show statistically significant differences across all variables except age.
 
-# --- Insight 2 ---
-st.header("3. Behavior by User Class")
+    - App Usage Time: Class 5 users spend over twice as much time on apps compared to others.
+    - Screen On Time: Their screens are active for more than 10 hours per day, suggesting high engagement or phone dependence.
+    - Battery Drain: Significantly higher battery usage reflects constant device activity across functions.
+    - Data Usage: Nearly triple the data consumption indicates more online activity (streaming, browsing, social media).
+    - Number of Apps Installed: Class 5 users have over twice the number of apps, pointing to broader and more frequent app exploration.
+    """)
+    st.image("images/class_behavior_chart.png")
+    st.image("images/engagement_ratio.png")
 
-# Melt for plotting
-melted = pd.melt(df,
-    id_vars='User Behavior Class',
-    value_vars=['App Usage Time (min/day)', 'Screen On Time (hours/day)'],
-    var_name='Metric',
-    value_name='Minutes per Day')
+# --- Section 5 ---
+elif page == "5. Your Number of Apps Define You":
+    st.header("5. Your Number of Apps Define You")
+    st.markdown("""
+    The model revealed a strong and significant relationship: 
 
-melted['Minutes per Day'] = np.where(melted['Metric'].str.contains('hour'),
-    melted['Minutes per Day'] * 60, melted['Minutes per Day'])
+    - Each additional app increases screen-on time by approximately 6.5 minutes/day
+    - The regression line fits the data closely with R² = 0.897
+    - The result is also visually confirmed by the strong linear trend and tight confidence interval around the red regression line
 
-fig3, ax3 = plt.subplots(figsize=(10, 6))
-sns.barplot(data=melted, x='User Behavior Class', y='Minutes per Day', hue='Metric', ci=95, ax=ax3)
-ax3.set_title("Avg Screen & App Usage Time by Class")
-st.pyplot(fig3)
-
-st.markdown("""
-- From **Class 1 to 5**, time spent increases consistently.
-- Class 5: **~540 minutes of app use**, nearly **10 hours** of screen-on time.
-""")
-
-# --- Insight 3 ---
-st.header("4. Regression: Installed Apps → Screen Time")
-df['Screen On Time (min/day)'] = df['Screen On Time (hours/day)'] * 60
-X = sm.add_constant(df[['Number of Apps Installed']])
-y = df['Screen On Time (min/day)']
-model = sm.OLS(y, X).fit()
-
-fig4, ax4 = plt.subplots(figsize=(10, 6))
-sns.regplot(x='Number of Apps Installed', y='Screen On Time (min/day)', data=df, ax=ax4, scatter_kws={'alpha':0.4})
-ax4.set_title("Linear Regression: Apps Installed vs. Screen Time")
-st.pyplot(fig4)
-
-st.markdown(f"""
-Each additional app = approx **{model.params[1]:.2f} min/day** extra screen time.  
-**$R^2$ = {model.rsquared:.3f}**: strong predictive power.
-""")
-
-# --- Insight 4 ---
-st.header("5. Engagement Ratio: App Time / Screen Time")
-df['Engagement Ratio'] = df['App Usage Time (min/day)'] / df['Screen On Time (min/day)']
-df['Engagement Ratio Clipped'] = df['Engagement Ratio'].clip(upper=1.2)
-
-fig5, ax5 = plt.subplots(figsize=(10, 5))
-sns.pointplot(data=df, x='User Behavior Class', y='Engagement Ratio Clipped', ci='sd', capsize=0.1, ax=ax5)
-ax5.set_title("App Time as % of Screen Time")
-st.pyplot(fig5)
-
-st.markdown("""
-- Class 5 users spend **90% of their screen time in apps**.
-- Lower classes are more scattered.
-""")
-
-# --- Final Insight ---
-st.header("6. Summary")
-st.markdown("""
-**Red flags for phone addiction risk:**
-- Surging app usage + screen time
-- Many installed apps
-- High engagement ratio (active time)
-
-**Demographics?** Not significant. Behavioral intensity matters more.
-""")
-
-st.success("This concludes the walkthrough. You can now share this app on GitHub or Streamlit Cloud.")
+    These findings suggest that the number of apps installed is not just a passive metric — it actively contributes to increased phone engagement. This supports our hypothesis that app diversity drives screen dependence, a key indicator of potential overuse.
+    """)
+    st.image("images/regression_apps_vs_screen.png")
+    st.image("images/engagement_ratio.png")
