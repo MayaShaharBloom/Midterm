@@ -15,28 +15,23 @@ st.set_page_config(page_title="Phone Addiction App", layout="wide")
 
 # --- Styling ---
 st.markdown("""
-<style>
-    html, body, [class*="css"] {
-        font-family: 'Segoe UI', sans-serif;
-    }
-    h1, h2, h3 {
-        color: #6a0dad;
-    }
-    .main-button {
-        display: flex;
-        flex-direction: column;
-        gap: 1rem;
-        max-width: 400px;
-    }
-    .main-button button {
-        background-color: #6a0dad !important;
-        color: white !important;
-        font-size: 18px !important;
-        padding: 1rem !important;
-        border-radius: 10px !important;
-        font-weight: bold;
-    }
-</style>
+    <style>
+        html, body, [class*='css']  {
+            font-family: 'Segoe UI', sans-serif;
+        }
+        h1, h2, h3 {
+            color: #6a0dad;
+        }
+        .main-button button {
+            background-color: #6a0dad !important;
+            color: white !important;
+            font-size: 18px !important;
+            padding: 0.75rem 1rem !important;
+            border-radius: 8px !important;
+            font-weight: bold;
+            margin-bottom: 10px;
+        }
+    </style>
 """, unsafe_allow_html=True)
 
 # --- Download CSV from Google Drive ---
@@ -59,8 +54,8 @@ except Exception as e:
 if 'page' not in st.session_state:
     st.session_state.page = 'home'
 
-# --- Homepage with buttons ---
-if st.session_state.page == 'home':
+# --- NAVIGATION BUTTONS ---
+def main_nav():
     st.title("📱 Behavioral Indicators of Phone Addiction")
     st.subheader("Explore the sections below:")
     st.markdown("<div class='main-button'>", unsafe_allow_html=True)
@@ -76,39 +71,59 @@ if st.session_state.page == 'home':
         st.session_state.page = 'section5'
     st.markdown("</div>", unsafe_allow_html=True)
 
-# --- Section 1 ---
+if st.session_state.page == 'home':
+    main_nav()
+
+# --- SECTION 1: Our Data ---
 elif st.session_state.page == 'section1':
     st.header("1. Our Data")
-    st.image("images/opening_gif.gif")
+    try:
+        st.image("images/opening_gif.gif")
+    except:
+        st.warning("Image 'opening_gif.gif' not found. Make sure it's uploaded to /images.")
     st.markdown("""
     This dataset captures a rich set of real-world behavioral signals from mobile phone users, including app usage time, screen-on time, data consumption, and the number of apps installed. These variables provide a practical foundation for exploring digital engagement patterns and identifying potential signs of overuse or phone addiction.
     """)
-    st.button("Back", on_click=lambda: st.session_state.update(page='home'))
+    if st.button("⬅ Back to Home"):
+        st.session_state.page = 'home'
 
-# --- Section 2 ---
+# --- SECTION 2: Demographics ---
 elif st.session_state.page == 'section2':
     st.header("2. Demographics Don't Matter")
-    st.image("images/bimodal_distribution.png")
+    try:
+        st.image("images/bimodal_distribution.png")
+        st.image("images/demographics_boxplots.png")
+    except:
+        st.warning("Some demographic images not found. Check /images folder.")
     st.markdown("Chi-square tests show no meaningful link between gender, OS, device model, or age band and high usage.")
-    st.image("images/demographics_boxplots.png")
-    st.button("Back", on_click=lambda: st.session_state.update(page='home'))
+    if st.button("⬅ Back to Home"):
+        st.session_state.page = 'home'
 
-# --- Section 3 ---
+# --- SECTION 3: Variables ---
 elif st.session_state.page == 'section3':
     st.header("3. The Story Begins with Variables")
-    st.image("images/final_summary_banner.png")
+    try:
+        st.image("images/final_summary_banner.png")
+    except:
+        st.warning("Image 'final_summary_banner.png' not found.")
     st.markdown("""
     App Usage Time shows a clear bimodal distribution, with peaks around 100 and 500 minutes per day.  
     Screen-On Time stretches up to 12 hours for some users.
     """)
-    st.button("Back", on_click=lambda: st.session_state.update(page='home'))
+    if st.button("⬅ Back to Home"):
+        st.session_state.page = 'home'
 
-# --- Section 4 ---
+# --- SECTION 4: Heavy Users ---
 elif st.session_state.page == 'section4':
     st.header("4. The Heavy Users")
-    st.image("images/final_summary_banner.png")
+    try:
+        st.image("images/final_summary_banner.png")
+        st.image("images/class_behavior_chart.png")
+        st.image("images/engagement_ratio.png")
+    except:
+        st.warning("Some images in this section are missing.")
     st.markdown("T-tests confirm that Class 5 tops every behavioural metric (app usage, screen time, data usage, apps installed) with p < 0.001.")
-    st.markdown("Class 5 averages ~0.9, meaning most screen time is in apps, while lower classes are more scattered. Class 4 also shows a high use of apps in screen on time.")
+    st.markdown("Class 5 averages ~0.9, meaning most screen time is in apps, while lower classes are more scattered.")
     st.markdown("""
     **Findings from T-Test: Behavioral Differences in Class 5 Users**
 
@@ -118,13 +133,17 @@ elif st.session_state.page == 'section4':
     - Data Usage: Nearly triple the data consumption.
     - Number of Apps Installed: Over twice as many apps.
     """)
-    st.image("images/class_behavior_chart.png")
-    st.image("images/engagement_ratio.png")
-    st.button("Back", on_click=lambda: st.session_state.update(page='home'))
+    if st.button("⬅ Back to Home"):
+        st.session_state.page = 'home'
 
-# --- Section 5 ---
+# --- SECTION 5: Apps Define You ---
 elif st.session_state.page == 'section5':
     st.header("5. Your Number of Apps Define You")
+    try:
+        st.image("images/regression_apps_vs_screen.png")
+        st.image("images/engagement_ratio.png")
+    except:
+        st.warning("One or more regression images are missing.")
     st.markdown("""
     The model revealed a strong and significant relationship:
 
@@ -134,6 +153,5 @@ elif st.session_state.page == 'section5':
 
     These findings suggest that the number of apps installed is not just a passive metric — it actively contributes to increased phone engagement.
     """)
-    st.image("images/regression_apps_vs_screen.png")
-    st.image("images/engagement_ratio.png")
-    st.button("Back", on_click=lambda: st.session_state.update(page='home'))
+    if st.button("⬅ Back to Home"):
+        st.session_state.page = 'home'
