@@ -5,6 +5,7 @@ import seaborn as sns
 import matplotlib.pyplot as plt
 import statsmodels.api as sm
 import os
+import wget
 import warnings
 
 warnings.filterwarnings("ignore")
@@ -38,15 +39,23 @@ st.markdown("""
 </style>
 """, unsafe_allow_html=True)
 
+# --- Download CSV from Google Drive ---
+file_id = '1plAz7EEeNs8j6WEYaBdLywyX9A9qMprS'
+url = f'https://drive.google.com/uc?export=download&id={file_id}'
+filename = 'phone_behavior_data.csv'
+
+if not os.path.exists(filename):
+    wget.download(url, filename)
+
 # --- Load dataset ---
 try:
-    df = pd.read_csv("phone_behavior_data.csv")
+    df = pd.read_csv(filename)
     df['Screen On Time (min/day)'] = df['Screen On Time (hours/day)'] * 60
     df['Engagement Ratio'] = df['App Usage Time (min/day)'] / df['Screen On Time (min/day)']
 except Exception as e:
-    st.error("Dataset not found. Please make sure 'phone_behavior_data.csv' is in the repo.")
+    st.error("Failed to load dataset. Please check the file or URL.")
 
-# --- Main navigation logic ---
+# --- Navigation state ---
 if 'page' not in st.session_state:
     st.session_state.page = 'home'
 
